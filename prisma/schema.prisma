@@ -14,29 +14,38 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid())
+  id        Int                       @id @default(autoincrement())
   name      String
-  email     String    @unique
+  email     String                    @unique
   password  String
 
   @@map("users")
 }
 
 model Invoice {
-  id          String    @id @default(uuid())
-  customer_id String  @default(uuid())
-  amount      Int
-  status      String
-  date        DateTime
+  id           Int                    @id @default(autoincrement())
+  date         DateTime               @default(now())
+  amount       Int
+  status       InvoiceStatus
 
+  customer     Customer               @relation(fields: [customerId], references: [id])
+  customerId   Int                    
+  
   @@map("invoices")
 }
 
 model Customer {
-  id          String    @id @default(uuid())
+  id          Int                     @id @default(autoincrement())
   name        String
   email       String
   image_url   String
+  
+  Invoice    Invoice[]
 
   @@map("customers")
+}
+
+enum InvoiceStatus {
+  pending
+  paid
 }
