@@ -9,7 +9,8 @@
 //   Revenue,
 // } from './definitions';
 // import { formatCurrency } from './utils';
-// import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore } from 'next/cache';
+import { db } from './db';
 
 // export async function fetchRevenue() {
 //   noStore();
@@ -163,24 +164,22 @@
 //   }
 // }
 
-// export async function fetchCustomers() {
-//   noStore();
-//   try {
-//     const data = await sql<CustomerField>`
-//       SELECT
-//         id,
-//         name
-//       FROM customers
-//       ORDER BY name ASC
-//     `;
+export async function fetchCustomers() {
+  noStore();
 
-//     const customers = data.rows;
-//     return customers;
-//   } catch (err) {
-//     console.error('Database Error:', err);
-//     throw new Error('Failed to fetch all customers.');
-//   }
-// }
+  try {
+    const customers = await db.customer.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return customers;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all customers.');
+  }
+}
 
 // export async function fetchFilteredCustomers(query: string) {
 //   noStore();
