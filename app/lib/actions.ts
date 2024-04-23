@@ -45,14 +45,13 @@ export async function createInvoice(prevState: State, formData: FormData) {
   }
 
   const { customerId, amount, status } = validatedFields.data;
-  const customerIdtoInt = parseInt(customerId);
   const amountInCents = amount * 100;
   const date = new Date().toISOString();
 
   try {
     await db.invoice.create({
       data: {
-        customerId: customerIdtoInt,
+        customerId: customerId,
         amount: amountInCents,
         status: status,
         date: date,

@@ -8,9 +8,10 @@
 //   User,
 //   Revenue,
 // } from './definitions';
-// import { formatCurrency } from './utils';
+import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
 import { db } from './db';
+import { InvoiceStatus, Prisma } from '@prisma/client';
 
 // export async function fetchRevenue() {
 //   noStore();
@@ -25,26 +26,38 @@ import { db } from './db';
 //   }
 // }
 
-// export async function fetchLatestInvoices() {
-//   noStore();
-//   try {
-//     const data = await sql<LatestInvoiceRaw>`
-//       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-//       FROM invoices
-//       JOIN customers ON invoices.customer_id = customers.id
-//       ORDER BY invoices.date DESC
-//       LIMIT 5`;
+export async function fetchLatestInvoices() {
+  noStore();
 
-//     const latestInvoices = data.rows.map((invoice) => ({
-//       ...invoice,
-//       amount: formatCurrency(invoice.amount),
-//     }));
-//     return latestInvoices;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch the latest invoices.');
-//   }
-// }
+  try {
+    const data = await db.invoice.findMany({
+      take: 5,
+      orderBy: { date: 'desc' },
+      select: {
+        id: true,
+        amount: true,
+        date: true,
+        status: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            image_url: true,
+          },
+        },
+      },
+    });
+
+    const latestInvoices = data.map((invoice) => ({
+      ...invoice,
+      amount: formatCurrency(invoice.amount),
+    }));
+    return latestInvoices;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the latest invoices.');
+  }
+}
 
 // export async function fetchCardData() {
 //   noStore();
@@ -79,90 +92,147 @@ import { db } from './db';
 //   }
 // }
 
-// const ITEMS_PER_PAGE = 6;
-// export async function fetchFilteredInvoices(
-//   query: string,
-//   currentPage: number,
-// ) {
-//   noStore();
-//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+const ITEMS_PER_PAGE = 6;
+export async function fetchFilteredInvoices(
+  query: string,
+  currentPage: number,
+) {
+  noStore();
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
-//   try {
-//     const invoices = await sql<InvoicesTable>`
-//       SELECT
-//         invoices.id,
-//         invoices.amount,
-//         invoices.date,
-//         invoices.status,
-//         customers.name,
-//         customers.email,
-//         customers.image_url
-//       FROM invoices
-//       JOIN customers ON invoices.customer_id = customers.id
-//       WHERE
-//         customers.name ILIKE ${`%${query}%`} OR
-//         customers.email ILIKE ${`%${query}%`} OR
-//         invoices.amount::text ILIKE ${`%${query}%`} OR
-//         invoices.date::text ILIKE ${`%${query}%`} OR
-//         invoices.status ILIKE ${`%${query}%`}
-//       ORDER BY invoices.date DESC
-//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-//     `;
+  try {
+    const validStatusValues = Object.values(InvoiceStatus);
+    const isStatusValid = validStatusValues.includes(
+      query.toUpperCase() as InvoiceStatus,
+    );
 
-//     return invoices.rows;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch invoices.');
-//   }
-// }
+    const validAmountValues = isNaN(parseFloat(query))
+      ? undefined
+      : parseFloat(query);
 
-// export async function fetchInvoicesPages(query: string) {
-//   noStore();
-//   try {
-//     const count = await sql`SELECT COUNT(*)
-//     FROM invoices
-//     JOIN customers ON invoices.customer_id = customers.id
-//     WHERE
-//       customers.name ILIKE ${`%${query}%`} OR
-//       customers.email ILIKE ${`%${query}%`} OR
-//       invoices.amount::text ILIKE ${`%${query}%`} OR
-//       invoices.date::text ILIKE ${`%${query}%`} OR
-//       invoices.status ILIKE ${`%${query}%`}
-//   `;
+    const validDateValues = !isNaN(Date.parse(query)) && {
+      date: { equals: new Date(query) },
+    };
 
-//     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
-//     return totalPages;
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch total number of invoices.');
-//   }
-// }
+    const whereConditions = [
+      { customer: { name: { contains: query, mode: 'insensitive' } } },
+      { customer: { email: { contains: query, mode: 'insensitive' } } },
+      {
+        amount: {
+          equals: validAmountValues,
+        },
+      },
+      query && validDateValues,
+      isStatusValid && { status: query.toUpperCase() as InvoiceStatus },
+    ].filter(Boolean) as Prisma.InvoiceWhereInput[];
 
-// export async function fetchInvoiceById(id: string) {
-//   noStore();
-//   try {
-//     const data = await sql<InvoiceForm>`
-//       SELECT
-//         invoices.id,
-//         invoices.customer_id,
-//         invoices.amount,
-//         invoices.status
-//       FROM invoices
-//       WHERE invoices.id = ${id};
-//     `;
+    const invoices = await db.invoice.findMany({
+      where: {
+        OR: whereConditions,
+      },
+      select: {
+        id: true,
+        customerId: true,
+        amount: true,
+        date: true,
+        status: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            image_url: true,
+          },
+        },
+      },
+      orderBy: { date: 'desc' },
+      take: ITEMS_PER_PAGE,
+      skip: offset,
+    });
 
-//     const invoice = data.rows.map((invoice) => ({
-//       ...invoice,
-//       amount: invoice.amount / 100,
-//     }));
+    return invoices;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoices.');
+  }
+}
 
-//     console.log(invoice);
-//     return invoice[0];
-//   } catch (error) {
-//     console.error('Database Error:', error);
-//     throw new Error('Failed to fetch invoice.');
-//   }
-// }
+export async function fetchInvoicesPages(query: string) {
+  noStore();
+
+  try {
+    const validStatusValues = Object.values(InvoiceStatus);
+    const isStatusValid = validStatusValues.includes(
+      query.toUpperCase() as InvoiceStatus,
+    );
+
+    const validAmountValues = isNaN(parseFloat(query))
+      ? undefined
+      : parseFloat(query);
+
+    const validDateValues = !isNaN(Date.parse(query)) && {
+      date: { equals: new Date(query) },
+    };
+
+    const whereConditions = [
+      { customer: { name: { contains: query, mode: 'insensitive' } } },
+      { customer: { email: { contains: query, mode: 'insensitive' } } },
+      {
+        amount: {
+          equals: validAmountValues,
+        },
+      },
+      query && validDateValues,
+      isStatusValid && { status: query.toUpperCase() as InvoiceStatus },
+    ].filter(Boolean) as Prisma.InvoiceWhereInput[];
+
+    const count = await db.invoice.count({
+      where: {
+        OR: whereConditions,
+      },
+    });
+
+    const totalPages = Math.ceil(count / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch total number of invoices.');
+  }
+}
+
+export async function fetchInvoiceById(id: string) {
+  noStore();
+  try {
+    const data = await db.invoice.findMany({
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        customerId: true,
+        amount: true,
+        date: true,
+        status: true,
+        customer: {
+          select: {
+            name: true,
+            email: true,
+            image_url: true,
+          },
+        },
+      },
+    });
+
+    const invoice = data.map((invoice) => ({
+      ...invoice,
+      amount: invoice.amount / 100,
+    }));
+
+    return invoice[0];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch invoice.');
+  }
+}
 
 export async function fetchCustomers() {
   noStore();
@@ -172,6 +242,8 @@ export async function fetchCustomers() {
       select: {
         id: true,
         name: true,
+        email: true,
+        image_url: true,
       },
     });
     return customers;

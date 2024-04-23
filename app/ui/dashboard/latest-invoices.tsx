@@ -1,11 +1,11 @@
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
-// import clsx from 'clsx';
-// import Image from 'next/image';
+import clsx from 'clsx';
+import Image from 'next/image';
 import { lusitana } from '@/app/ui/fonts';
+import { fetchLatestInvoices } from '@/app/lib/data';
 
-// import { fetchLatestInvoices } from '@/app/lib/data';
 export default async function LatestInvoices() {
-  // const latestInvoices = await fetchLatestInvoices();
+  const latestInvoices = await fetchLatestInvoices();
 
   return (
     <div className="flex w-full flex-col md:col-span-4">
@@ -13,10 +13,8 @@ export default async function LatestInvoices() {
         Latest Invoices
       </h2>
       <div className="flex grow flex-col justify-between rounded-xl bg-gray-50 p-4">
-        {/* NOTE: comment in this code when you get to this point in the course */}
-
         <div className="bg-white px-6">
-          {/* {latestInvoices.map((invoice, i) => {
+          {latestInvoices.map((invoice, i) => {
             return (
               <div
                 key={invoice.id}
@@ -29,18 +27,18 @@ export default async function LatestInvoices() {
               >
                 <div className="flex items-center">
                   <Image
-                    src={invoice.image_url}
-                    alt={`${invoice.name}'s profile picture`}
+                    src={invoice.customer.image_url}
+                    alt={`${invoice.customer.name}'s profile picture`}
                     className="mr-4 rounded-full"
                     width={32}
                     height={32}
                   />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold md:text-base">
-                      {invoice.name}
+                      {invoice.customer.name}
                     </p>
                     <p className="hidden text-sm text-gray-500 sm:block">
-                      {invoice.email}
+                      {invoice.customer.email}
                     </p>
                   </div>
                 </div>
@@ -51,7 +49,7 @@ export default async function LatestInvoices() {
                 </p>
               </div>
             );
-          })} */}
+          })}
         </div>
         <div className="flex items-center pb-2 pt-6">
           <ArrowPathIcon className="h-5 w-5 text-gray-500" />
