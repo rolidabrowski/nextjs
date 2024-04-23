@@ -9,7 +9,7 @@ import {
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
 import { Customer, Invoice } from '@prisma/client';
-// import { updateInvoice } from '@/app/lib/actions';
+import { updateInvoice } from '@/app/lib/actions';
 
 export default function EditInvoiceForm({
   invoice,
@@ -18,11 +18,10 @@ export default function EditInvoiceForm({
   invoice: Invoice;
   customers: Customer[];
 }) {
-  // const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
 
   return (
-    // <form action={updateInvoiceWithId}>
-    <form>
+    <form action={updateInvoiceWithId}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         {/* Customer Name */}
         <div className="mb-4">
