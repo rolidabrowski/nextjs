@@ -7,20 +7,14 @@ export async function fetchRevenue() {
   noStore();
 
   try {
-    const data = await db.invoice.groupBy({
-      by: ['date'],
-      _sum: {
+    const invoices = await db.invoice.findMany({
+      select: {
         amount: true,
-      },
-      orderBy: {
-        date: 'asc',
+        date: true,
       },
     });
 
-    return data.map((revenue) => ({
-      date: revenue.date,
-      amount: revenue._sum.amount,
-    }));
+    return invoices;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch revenue data.');

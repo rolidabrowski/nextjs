@@ -1,4 +1,19 @@
-import { Revenue } from './definitions';
+import { Revenue, RevenueFromInvoice } from './definitions';
+
+const monthNames = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString('en-US', {
@@ -23,7 +38,7 @@ export const formatDateToLocal = (
 
 export const generateYAxis = (revenue: Revenue[]) => {
   const yAxisLabels = [];
-  const highestRecord = Math.max(...revenue.map((date) => date.amount));
+  const highestRecord = Math.max(...revenue.map((month) => month.revenue));
   const topLabel = Math.ceil(highestRecord / 1000) * 1000;
 
   for (let i = topLabel; i >= 0; i -= 1000) {
@@ -64,4 +79,21 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     '...',
     totalPages,
   ];
+};
+
+export const sumAmountsByMonth = (invoices: RevenueFromInvoice[]) => {
+  const monthsInYear = Array(12).fill(0);
+
+  invoices.forEach((invoice: RevenueFromInvoice) => {
+    const month = new Date(invoice.date).getMonth();
+    const amount = invoice.amount / 100;
+    monthsInYear[month] += amount;
+  });
+
+  const result = monthNames.map((month, index) => ({
+    month: month,
+    revenue: monthsInYear[index],
+  }));
+
+  return result;
 };

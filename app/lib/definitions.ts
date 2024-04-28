@@ -7,7 +7,12 @@ export type State = {
   message?: string | null;
 };
 
-export type Revenue = {
-  date: string;
+export type RevenueFromInvoice = {
+  date: Date;
   amount: number;
+};
+
+export type Revenue = {
+  month: string;
+  revenue: number;
 };
