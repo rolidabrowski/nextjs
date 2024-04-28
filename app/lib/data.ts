@@ -1,7 +1,7 @@
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
 import { db } from './db';
-import { InvoiceStatus, Prisma } from '@prisma/client';
+import { Customer, InvoiceStatus, Prisma } from '@prisma/client';
 
 export async function fetchRevenue() {
   noStore();
@@ -281,7 +281,7 @@ export async function fetchCustomers() {
 //       total_paid: formatCurrency(customer.total_paid),
 //     }));
 
-//     return customers;
+//     return data;
 //   } catch (err) {
 //     console.error('Database Error:', err);
 //     throw new Error('Failed to fetch customer table.');

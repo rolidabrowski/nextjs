@@ -1,4 +1,4 @@
-import { Revenue, RevenueFromInvoice } from './definitions';
+import { Revenue, RevenueChartType } from './definitions';
 
 const monthNames = [
   'Jan',
@@ -36,7 +36,7 @@ export const formatDateToLocal = (
   return formatter.format(date);
 };
 
-export const generateYAxis = (revenue: Revenue[]) => {
+export const generateYAxis = (revenue: RevenueChartType[]) => {
   const yAxisLabels = [];
   const highestRecord = Math.max(...revenue.map((month) => month.revenue));
   const topLabel = Math.ceil(highestRecord / 1000) * 1000;
@@ -81,10 +81,10 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
   ];
 };
 
-export const sumAmountsByMonth = (invoices: RevenueFromInvoice[]) => {
+export const sumAmountsByMonth = (invoices: Revenue[]) => {
   const monthsInYear = Array(12).fill(0);
 
-  invoices.forEach((invoice: RevenueFromInvoice) => {
+  invoices.forEach((invoice: Revenue) => {
     const month = new Date(invoice.date).getMonth();
     const amount = invoice.amount / 100;
     monthsInYear[month] += amount;
