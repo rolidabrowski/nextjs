@@ -1,4 +1,13 @@
-export type State = {
+export type RegisterFormState = {
+  errors?: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+  };
+  message?: string | null;
+};
+
+export type InvoiceFormState = {
   errors?: {
     customerId?: string[];
     amount?: string[];
