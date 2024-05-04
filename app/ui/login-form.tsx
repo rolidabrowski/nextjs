@@ -62,7 +62,7 @@ export default function LoginForm() {
         </div>
         <LoginButton />
         <div
-          className="flex h-8 items-end space-x-1"
+          className="flex items-end space-x-1"
           aria-live="polite"
           aria-atomic="true"
         >
@@ -72,6 +72,12 @@ export default function LoginForm() {
               <p className="text-sm text-red-500">{errorMessage}</p>
             </>
           )}
+        </div>
+        <div className=" mb-2 mt-2 block flex h-8 items-center justify-center gap-0.5 text-xs font-medium text-gray-900">
+          <p>Don&apos;t have an account?</p>
+          <a href="/register" className="text-xs text-blue-500">
+            Sign Up
+          </a>
         </div>
       </div>
     </form>

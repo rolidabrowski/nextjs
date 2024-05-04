@@ -123,7 +123,7 @@ export default function SignupForm() {
 function SignupButton() {
   const { pending } = useFormStatus();
   return (
-    <Button className="mt-4 w-full" aria-disabled={pending} type="submit">
+    <Button className="mb-4 mt-4 w-full" aria-disabled={pending} type="submit">
       {pending ? 'Submitting...' : 'Sign up'}
       <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
     </Button>
