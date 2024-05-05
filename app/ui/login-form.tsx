@@ -10,6 +10,9 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from './button';
 import { useFormState, useFormStatus } from 'react-dom';
 import { authenticate } from '@/app/lib/actions';
+import { signIn } from 'next-auth/react';
+// import Image from 'next/image';
+// import googleLogo from '@/public/google.png';
 
 export default function LoginForm() {
   const [errorMessage, dispatch] = useFormState(authenticate, undefined);
@@ -61,6 +64,7 @@ export default function LoginForm() {
           </div>
         </div>
         <LoginButton />
+        <GoogleSignInButton />
         <div
           className="flex items-end space-x-1"
           aria-live="polite"
@@ -88,7 +92,21 @@ function LoginButton() {
   const { pending } = useFormStatus();
   return (
     <Button className="mt-4 w-full" aria-disabled={pending}>
-      Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+      Signin <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+    </Button>
+  );
+}
+
+function GoogleSignInButton() {
+  const handleClick = () => {
+    signIn('google');
+  };
+
+  return (
+    <Button onClick={handleClick} className="mt-4 w-full">
+      {/* <Image src={googleLogo} alt="Google Logo" width={20} height={20} /> */}
+      Continue with Google
+      <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
     </Button>
   );
 }

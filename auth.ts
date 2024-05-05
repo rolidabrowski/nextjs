@@ -4,7 +4,11 @@ import Credentials from 'next-auth/providers/credentials';
 import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { db } from './app/lib/db';
-import { User } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
+// import { PrismaAdapter } from '@auth/prisma-adapter';
+import Google from 'next-auth/providers/google';
+
+// const prisma = new PrismaClient();
 
 async function getUser(email: string): Promise<User | undefined> {
   try {
@@ -21,6 +25,7 @@ async function getUser(email: string): Promise<User | undefined> {
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  // adapter: PrismaAdapter(prisma),
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -40,5 +45,6 @@ export const { auth, signIn, signOut } = NextAuth({
         return null;
       },
     }),
+    Google,
   ],
 });
